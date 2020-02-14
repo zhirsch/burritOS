@@ -5,14 +5,19 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+
 use burrit_os::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
 
-    #[cfg(test)] test_main();
+    burrit_os::init();
 
+    #[cfg(test)]
+    test_main();
+
+    println!("It did not crash!");
     loop {}
 }
 
