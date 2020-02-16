@@ -6,42 +6,52 @@
 
 extern crate alloc;
 
+use alloc::{boxed::Box, vec::Vec};
 use bootloader::{entry_point, BootInfo};
-use burrit_os::println;
+use burrit_os::{allocator::HEAP_SIZE, hlt_loop, tests};
 use core::panic::PanicInfo;
 
-entry_point!(kernel_main);
+entry_point!(main);
 
-fn kernel_main(boot_info: &'static BootInfo) -> ! {
+fn main(boot_info: &'static BootInfo) -> ! {
     use burrit_os::allocator;
     use burrit_os::memory::{self, BootInfoFrameAllocator};
     use x86_64::VirtAddr;
 
-    println!("Hello World{}", "!");
     burrit_os::init();
-
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(phys_mem_offset) };
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
-
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
 
-    #[cfg(test)]
     test_main();
-
-    println!("It did not crash!");
-    burrit_os::hlt_loop();
+    hlt_loop();
 }
 
-#[cfg(not(test))]
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
-    burrit_os::hlt_loop();
-}
-
-#[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     burrit_os::test_panic_handler(info);
+}
+
+tests! {
+    test_simple_allocation {
+        let heap_value = Box::new(41);
+        assert_eq!(*heap_value, 41);
+    }
+
+    test_large_vec {
+        let n = 1000;
+        let mut vec = Vec::new();
+        for i in 0..n {
+            vec.push(i);
+        }
+        assert_eq!(vec.iter().sum::<u64>(), (n - 1) * n / 2);
+    }
+
+    test_many_boxes {
+        for i in 0..HEAP_SIZE {
+            let x = Box::new(i);
+            assert_eq!(*x, i);
+        }
+    }
 }
