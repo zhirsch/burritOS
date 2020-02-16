@@ -4,6 +4,7 @@
 
 use core::panic::PanicInfo;
 
+use bootloader::{entry_point, BootInfo};
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 use burrit_os::{exit_qemu, serial_print, serial_println, QemuExitCode};
@@ -22,8 +23,9 @@ lazy_static! {
     };
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(kernel_main);
+
+fn kernel_main(_boot_info: &'static BootInfo) -> ! {
     serial_print!("stack overflow... ");
 
     burrit_os::init();

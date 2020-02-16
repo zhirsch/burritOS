@@ -6,12 +6,15 @@
 
 use core::panic::PanicInfo;
 
-use burrit_os::{println, tests};
+use bootloader::{entry_point, BootInfo};
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+use burrit_os::{hlt_loop, println, tests};
+
+entry_point!(kernel_main);
+
+fn kernel_main(_boot_info: &'static BootInfo) -> ! {
     test_main();
-    loop {}
+    hlt_loop();
 }
 
 #[panic_handler]
