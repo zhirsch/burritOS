@@ -64,10 +64,7 @@ extern "x86-interrupt" fn double_fault_handler(
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
     print!(".");
 
-    unsafe {
-        PICS.lock()
-            .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
-    }
+    notify_end_of_interrupt(InterruptIndex::Timer)
 }
 
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
@@ -94,9 +91,12 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut Interrup
         }
     }
 
+    notify_end_of_interrupt(InterruptIndex::Keyboard);
+}
+
+fn notify_end_of_interrupt(index: InterruptIndex) -> () {
     unsafe {
-        PICS.lock()
-            .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
+        PICS.lock().notify_end_of_interrupt(index.as_u8());
     }
 }
 
