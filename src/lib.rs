@@ -2,6 +2,9 @@
 #![cfg_attr(test, no_main)]
 #![feature(abi_x86_interrupt)]
 #![feature(alloc_error_handler)]
+#![feature(alloc_layout_extra)]
+#![feature(const_fn)]
+#![feature(const_in_array_repeat_expressions)]
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
@@ -18,6 +21,7 @@ pub mod gdt;
 pub mod interrupts;
 pub mod memory;
 pub mod serial;
+pub mod task;
 pub mod vga_buffer;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
